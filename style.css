@@ -18,7 +18,7 @@ body {
 }
 
 .container {
-    height: 550px;
+    height: 533px;
     width: 450px;
     background-color: rgba(243, 243, 243, 0.345);
     border-radius: 5px;
@@ -141,7 +141,7 @@ footer {
 
 @media (max-width: 450px) {
     .container {
-        height: 600px;
+        height: 575px;
         width: 350px;
     }
 
