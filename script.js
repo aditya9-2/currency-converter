@@ -1,13 +1,6 @@
 
-const fromCurrency = document.querySelector('#from-currency');
-const toCurrency = document.querySelector('#to-currency');
-const btn = document.querySelector('#btn');
-const showResult = document.querySelector('#result');
 
-const api = `4ca8ae49ce1a78dc06c963d1`;
-const apiURL = `https://v6.exchangerate-api.com/v6/${api}/latest/USD`;
-
-const currensies = [
+const currencies = [
     "USD",
     "AED",
     "AFN",
@@ -172,7 +165,16 @@ const currensies = [
     "ZWL",
 ]
 
-currensies.forEach((curr) => {
+const fromCurrency = document.querySelector('#from-currency');
+const toCurrency = document.querySelector('#to-currency');
+const btn = document.querySelector('#btn');
+const showResult = document.querySelector('#result');
+
+const api = '4ca8ae49ce1a78dc06c963d1';
+const apiURL = `https://v6.exchangerate-api.com/v6/${api}/latest/USD`;
+
+
+currencies.forEach(curr => {
     const option = document.createElement("option");
     option.value = curr;
     option.text = curr;
@@ -180,7 +182,7 @@ currensies.forEach((curr) => {
     option.style.backgroundColor = '#fff';
 });
 
-currensies.forEach((curr) => {
+currencies.forEach(curr => {
     const option = document.createElement("option");
     option.value = curr;
     option.text = curr;
@@ -191,32 +193,48 @@ currensies.forEach((curr) => {
 fromCurrency.value = 'USD';
 toCurrency.value = 'INR';
 
+
+const fetchExchangeRates = () => {
+    return new Promise((resolve, reject) => {
+        fetch(apiURL)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch exchange rates');
+                }
+                return response.json();
+            })
+            .then(data => resolve(data.conversion_rates))
+            .catch(error => reject(error));
+    });
+};
+
+
 const convertCurrency = () => {
-
     const amount = document.querySelector('#amount').value;
+    const fromCurrencyCode = fromCurrency.value;
+    const toCurrencyCode = toCurrency.value;
 
-
-    const FC = fromCurrency.value;
-    const TC = toCurrency.value;
-
-    if (amount.length != 0) {
-
-        fetch(apiURL).then(response => response.json()).then((data) => {
-
-            let fromExchangeRate = data.conversion_rates[FC];
-            let toExchangeRate = data.conversion_rates[TC];
-
-            let convertedAmount = (amount / fromExchangeRate) * toExchangeRate;
-            showResult.innerHTML = `${amount} ${FC} : ${convertedAmount.toFixed(3)} ${TC}`;
-        });
-
-
-    } else {
-
-        alert('Please fill the amount')
-
+    if (amount.trim() === '') {
+        alert('Please fill in the amount');
+        return;
     }
-}
+
+    fetchExchangeRates()
+        .then(rates => {
+            const fromRate = rates[fromCurrencyCode];
+            const toRate = rates[toCurrencyCode];
+
+            if (fromRate && toRate) {
+                const convertedAmount = (amount / fromRate) * toRate;
+                showResult.innerHTML = `${amount} ${fromCurrencyCode} : ${convertedAmount.toFixed(3)} ${toCurrencyCode}`;
+            } else {
+                showResult.innerHTML = 'Currency codes are not valid.';
+            }
+        })
+        .catch(error => {
+            showResult.innerHTML = `Error: ${error.message}`;
+        });
+};
 
 
 btn.addEventListener('click', convertCurrency);
